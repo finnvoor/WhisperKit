@@ -46,6 +46,8 @@ public class WhisperKit: Transcriber {
     public var encoderOutput: MLMultiArray?
     public var decoderInputs: DecodingInputs?
     public var currentTimings: TranscriptionTimings?
+    
+    public let progress = Progress()
 
     public init(
         model: String? = nil,
@@ -376,6 +378,7 @@ public class WhisperKit: Transcriber {
         options.verbose = Logging.shared.logLevel != .none
 
         let contentFrames = audioArray.count
+        progress.totalUnitCount = Int64(contentFrames)
         timings.inputAudioSeconds = Double(Int(contentFrames) / WhisperKit.sampleRate) - Double(decodeOptions?.clipTimestamps.first ?? 0)
 
         // MARK: Init decoder inputs
@@ -498,6 +501,7 @@ public class WhisperKit: Transcriber {
                     Logging.error("Unable to decode text")
                     return nil
                 }
+                progress.completedUnitCount = Int64(seek + segmentSize)
 
                 // MARK: Windowing
 
